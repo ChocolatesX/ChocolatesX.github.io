@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code · 多系统安装 & 多项目切换完整指南</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0d0b;
+    --surface: #161410;
+    --surface2: #1e1b16;
+    --surface3: #252119;
+    --border: #302c24;
+    --border2: #3d3830;
+    --text: #e8dfc8;
+    --text2: #b0a890;
+    --text3: #7a6e58;
+    --accent: #e8873a;
+    --accent2: #4a9fd4;
+    --accent3: #5dbf7a;
+    --accent4: #c87bd4;
+    --gold: #d4a83a;
+    --red: #d45a4a;
+    --win-blue: #0078d4;
+    --mac-silver: #c8c8c8;
+    --linux-orange: #e95420;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 14.5px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0e0d0b 0%, #1a160e 50%, #0e0d0b 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 48px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 600px 300px at 70% 50%, rgba(232,135,58,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 400px at 20% 80%, rgba(74,159,212,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 960px; margin: 0 auto; position: relative; }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(232,135,58,0.12);
+    border: 1px solid rgba(232,135,58,0.25);
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  header h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .h1-line1 { color: var(--text); }
+  .h1-line2 { color: var(--accent); }
+  .header-desc { color: var(--text3); font-size: 14px; font-weight: 300; letter-spacing: 0.5px; max-width: 560px; }
+  .header-tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+  .htag {
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .htag-win { background: rgba(0,120,212,0.15); border: 1px solid rgba(0,120,212,0.3); color: #5aabff; }
+  .htag-mac { background: rgba(200,200,200,0.1); border: 1px solid rgba(200,200,200,0.2); color: #c8c8c8; }
+  .htag-linux { background: rgba(233,84,32,0.12); border: 1px solid rgba(233,84,32,0.25); color: #ff7a4a; }
+  .htag-project { background: rgba(93,191,122,0.1); border: 1px solid rgba(93,191,122,0.2); color: var(--accent3); }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(14,13,11,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 48px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-inner a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--text3);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-inner a:hover { color: var(--accent); border-bottom-color: rgba(232,135,58,0.4); }
+  .nav-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); opacity: 0.6; }
+
+  /* ─── MAIN ─── */
+  main { max-width: 960px; margin: 0 auto; padding: 56px 48px 100px; }
+
+  /* ─── SECTIONS ─── */
+  section { margin-bottom: 80px; }
+  .sec-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-num-box {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    background: rgba(232,135,58,0.1);
+    border: 1px solid rgba(232,135,58,0.2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  h2 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  h2 small { display: block; font-size: 13px; color: var(--text3); font-family: 'Noto Sans SC', sans-serif; font-weight: 400; margin-top: 4px; }
+  h3 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h3 .h3-icon { font-size: 18px; }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  p { color: var(--text2); margin-bottom: 12px; line-height: 1.85; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ─── OS TABS ─── */
+  .os-tabs-wrap { margin: 20px 0; }
+  .os-tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 0;
+  }
+  .os-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--text3);
+    transition: all 0.15s;
+    border-radius: 3px 3px 0 0;
+    margin-bottom: -1px;
+  }
+  .os-tab-btn:hover { color: var(--text2); background: var(--surface2); }
+  .os-tab-btn.active { color: var(--text); background: var(--surface2); border-color: var(--border2); border-bottom-color: var(--surface2); }
+  .os-tab-btn .os-icon { font-size: 14px; }
+  .os-tab-panel { display: none; }
+  .os-tab-panel.active { display: block; }
+  .os-tab-content {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    overflow: hidden;
+  }
+
+  /* ─── CODE BLOCKS ─── */
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .cb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--surface3);
+    border-bottom: 1px solid var(--border);
+  }
+  .cb-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 1px; }
+  .cb-copy {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .cb-copy:hover { color: var(--accent3); background: rgba(93,191,122,0.08); }
+  pre { padding: 16px 18px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  pre::-webkit-scrollbar { height: 3px; }
+  pre::-webkit-scrollbar-thumb { background: var(--border2); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.75; color: var(--text); }
+  .ic { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(232,135,58,0.1); color: var(--accent); padding: 1px 6px; border-radius: 2px; border: 1px solid rgba(232,135,58,0.2); }
+  /* Syntax highlighting */
+  .s-comment { color: #5a6e4a; font-style: italic; }
+  .s-cmd { color: #ffcb6b; }
+  .s-export { color: #c792ea; }
+  .s-key { color: #89ddff; }
+  .s-val { color: #c3e88d; }
+  .s-str { color: #f0a070; }
+  .s-flag { color: #82aaff; }
+  .s-path { color: #a8d5b5; }
+  .s-section { color: var(--gold); font-weight: 600; }
+  .s-win { color: #5aabff; }
+  .s-mac { color: #c8c8c8; }
+  .s-linux { color: #ff7a4a; }
+
+  /* ─── PLATFORM CARDS ─── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px){ .platform-grid{ grid-template-columns: 1fr; } }
+  .platform-card {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .platform-card:hover { transform: translateY(-2px); }
+  .pc-head {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Serif SC', serif;
+  }
+  .pc-icon { font-size: 22px; }
+  .pc-body { padding: 14px 18px; background: var(--surface); font-size: 13px; color: var(--text2); }
+  .pc-body li { margin-bottom: 5px; padding-left: 14px; position: relative; list-style: none; }
+  .pc-body li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+  .pc-win .pc-head { background: rgba(0,120,212,0.15); color: #5aabff; border-bottom: 1px solid rgba(0,120,212,0.2); }
+  .pc-mac .pc-head { background: rgba(200,200,200,0.08); color: #d0d0d0; border-bottom: 1px solid rgba(200,200,200,0.15); }
+  .pc-linux .pc-head { background: rgba(233,84,32,0.12); color: #ff7a4a; border-bottom: 1px solid rgba(233,84,32,0.2); }
+
+  /* ─── ALERT BOXES ─── */
+  .alert {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 3px;
+    margin: 14px 0;
+    font-size: 13.5px;
+    border-left: 3px solid;
+    line-height: 1.7;
+  }
+  .alert-icon { flex-shrink: 0; font-size: 16px; }
+  .alert-warn { background: rgba(212,168,58,0.08); border-color: var(--gold); color: #c8a050; }
+  .alert-tip { background: rgba(93,191,122,0.07); border-color: var(--accent3); color: #7ad898; }
+  .alert-info { background: rgba(74,159,212,0.07); border-color: var(--accent2); color: #6ab8e0; }
+  .alert-danger { background: rgba(212,90,74,0.08); border-color: var(--red); color: #e07860; }
+  .alert a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ─── WORKFLOW DIAGRAM ─── */
+  .workflow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .workflow-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 1px; margin-bottom: 16px; text-transform: uppercase; }
+  .workflow-diagram { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); line-height: 1.8; white-space: pre; }
+  .wd-accent { color: var(--accent); }
+  .wd-green { color: var(--accent3); }
+  .wd-blue { color: var(--accent2); }
+  .wd-gold { color: var(--gold); }
+
+  /* ─── METHOD CARDS ─── */
+  .method-cards { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+  .method-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .method-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .method-title-wrap { display: flex; align-items: center; gap: 10px; }
+  .method-num {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    color: #1a0800;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .method-title { font-weight: 700; font-size: 15px; color: var(--text); }
+  .method-body { padding: 18px 18px 16px; }
+  .method-desc { color: var(--text2); font-size: 13.5px; margin-bottom: 12px; }
+  .method-pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  @media(max-width:500px){ .method-pros-cons{ grid-template-columns: 1fr; } }
+  .pros, .cons {
+    padding: 10px 12px;
+    border-radius: 3px;
+    font-size: 12.5px;
+  }
+  .pros { background: rgba(93,191,122,0.06); border: 1px solid rgba(93,191,122,0.15); }
+  .cons { background: rgba(212,90,74,0.06); border: 1px solid rgba(212,90,74,0.15); }
+  .pros-title { color: var(--accent3); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .cons-title { color: var(--red); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .pros li, .cons li { list-style: none; padding-left: 12px; position: relative; margin-bottom: 3px; color: var(--text2); line-height: 1.6; }
+  .pros li::before { content: '+'; position: absolute; left: 0; color: var(--accent3); }
+  .cons li::before { content: '−'; position: absolute; left: 0; color: var(--red); }
+
+  /* ─── TABLE ─── */
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .data-table th { background: var(--surface3); padding: 9px 13px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; border-bottom: 1px solid var(--border2); }
+  .data-table td { padding: 9px 13px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(232,135,58,0.03); }
+  .data-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 12px; }
+
+  /* ─── TAGS ─── */
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+  .tag-green { background: rgba(93,191,122,0.12); color: var(--accent3); border: 1px solid rgba(93,191,122,0.2); }
+  .tag-orange { background: rgba(232,135,58,0.12); color: var(--accent); border: 1px solid rgba(232,135,58,0.2); }
+  .tag-blue { background: rgba(74,159,212,0.12); color: var(--accent2); border: 1px solid rgba(74,159,212,0.2); }
+  .tag-red { background: rgba(212,90,74,0.12); color: var(--red); border: 1px solid rgba(212,90,74,0.2); }
+  .tag-gold { background: rgba(212,168,58,0.12); color: var(--gold); border: 1px solid rgba(212,168,58,0.2); }
+
+  /* ─── STEP LIST ─── */
+  .steps { margin: 16px 0; }
+  .step { display: flex; gap: 14px; margin-bottom: 20px; }
+  .step-n { flex-shrink: 0; width: 28px; height: 28px; background: rgba(232,135,58,0.2); border: 1px solid rgba(232,135,58,0.35); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 2px; margin-top: 3px; }
+  .step-c { flex: 1; }
+  .step-t { font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 14.5px; }
+  .step-d { color: var(--text2); font-size: 13.5px; }
+
+  /* ─── DIVIDER ─── */
+  .divider { display: flex; align-items: center; gap: 14px; margin: 48px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 2px; }
+
+  /* ─── COMPARISON TABLE ─── */
+  .compare-wrap { overflow-x: auto; margin: 16px 0; }
+  .compare-table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 13px; }
+  .compare-table th { background: var(--surface3); padding: 10px 14px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 0.5px; border: 1px solid var(--border); }
+  .compare-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .check { color: var(--accent3); font-size: 14px; }
+  .cross { color: var(--red); font-size: 14px; }
+  .partial { color: var(--gold); font-size: 14px; }
+
+  /* ─── TOOL CARDS ─── */
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  @media(max-width:560px){ .tool-grid{ grid-template-columns: 1fr; } }
+  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; transition: border-color 0.2s; }
+  .tool-card:hover { border-color: var(--border2); }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .tc-name { font-weight: 700; font-size: 14.5px; color: var(--text); }
+  .tc-desc { font-size: 12.5px; color: var(--text2); line-height: 1.6; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+  footer span { color: var(--accent); }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  section { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge"><div class="badge-dot"></div>补充教程 · 2025–2026</div>
+    <h1>
+      <div class="h1-line1">多系统安装 &</div>
+      <div class="h1-line2">多项目切换操作完整指南</div>
+    </h1>
+    <p class="header-desc">覆盖 Windows / macOS / Linux 全平台安装，以及单项目会话切换、多项目并行工作流的完整方案</p>
+    <div class="header-tags">
+      <div class="htag htag-win">🪟 Windows WSL2 / CMD / PS</div>
+      <div class="htag htag-mac">🍎 macOS Intel / Apple Silicon</div>
+      <div class="htag htag-linux">🐧 Ubuntu · Debian · RHEL · Arch</div>
+      <div class="htag htag-project">⚡ Git Worktree 并行会话</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#os-overview"><span class="nav-num">A</span>平台总览</a>
+    <a href="#macos"><span class="nav-num">B</span>macOS 安装</a>
+    <a href="#linux"><span class="nav-num">C</span>Linux 安装</a>
+    <a href="#windows"><span class="nav-num">D</span>Windows 安装</a>
+    <a href="#session-basics"><span class="nav-num">E</span>会话基础</a>
+    <a href="#multi-project"><span class="nav-num">F</span>多项目切换</a>
+    <a href="#worktree"><span class="nav-num">G</span>Git Worktree 并行</a>
+    <a href="#tools"><span class="nav-num">H</span>管理工具</a>
+    <a href="#advanced"><span class="nav-num">I</span>高级工作流</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ── A 平台总览 ── -->
+<section id="os-overview">
+  <div class="sec-header">
+    <div class="sec-num-box">A</div>
+    <h2>各平台支持总览<small>三大操作系统安装路径一览</small></h2>
+  </div>
+
+  <div class="platform-grid">
+    <div class="platform-card pc-mac">
+      <div class="pc-head"><div class="pc-icon">🍎</div>macOS</div>
+      <div class="pc-body">
+        <ul>
+          <li>Intel (x86_64) 完全支持</li>
+          <li>Apple Silicon (M1/M2/M3/M4) 完全支持</li>
+          <li>推荐通过 Homebrew 管理 Node.js</li>
+          <li>zsh 为默认 Shell，配置写入 ~/.zshrc</li>
+        </ul>
+      </div>
+    </div>
+    <div class="platform-card pc-linux">
+      <div class="pc-head"><div class="pc-icon">🐧</div>Linux</div>
+      <div class="pc-body">
+        <ul>
+          <li>Ubuntu 20.04 / 22.04 / 24.04 LTS</li>
+          <li>Debian 11 / 12，CentOS / RHEL 8+</li>
+          <li>Arch Linux / Fedora / openSUSE</li>
+          <li>ARM64 服务器也支持</li>
+        </ul>
+      </div>
+    </div>
+    <div class="platform-card pc-win">
+      <div class="pc-head"><div class="pc-icon">🪟</div>Windows</div>
+      <div class="pc-body">
+        <ul>
+          <li>WSL2（强烈推荐，体验最佳）</li>
+          <li>Git Bash（基本功能可用）</li>
+          <li>PowerShell 7（官方支持）</li>
+          <li>CMD（功能受限，不推荐）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr><th>功能特性</th><th>macOS</th><th>Linux</th><th>Windows WSL2</th><th>Windows 原生</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>完整命令行功能</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="partial">△</span></td></tr>
+        <tr><td>Git Worktree 并行</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+        <tr><td>MCP 服务器支持</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="partial">△</span></td></tr>
+        <tr><td>tmux 多会话管理</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="cross">✗</span></td></tr>
+        <tr><td>推荐程度</td><td><span class="tag tag-green">首选</span></td><td><span class="tag tag-green">首选</span></td><td><span class="tag tag-blue">推荐</span></td><td><span class="tag tag-gold">可用</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── B macOS ── -->
+<section id="macos">
+  <div class="sec-header">
+    <div class="sec-num-box">B</div>
+    <h2>🍎 macOS 完整安装<small>Intel & Apple Silicon 双架构</small></h2>
+  </div>
+
+  <h3><span class="h3-icon">📦</span>方式一：Homebrew（推荐）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · macOS Homebrew</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ① 安装 Homebrew（如未安装）</span>
+<span class="s-cmd">/bin/bash</span> -c <span class="s-str">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span>
+
+<span class="s-comment"># Apple Silicon (M1/M2/M3/M4) 需要额外配置 PATH</span>
+<span class="s-cmd">echo</span> <span class="s-str">'eval "$(/opt/homebrew/bin/brew shellenv)"'</span> >> ~/.zshrc
+<span class="s-cmd">source</span> ~/.zshrc
+
+<span class="s-comment"># ② 安装 Node.js LTS</span>
+<span class="s-cmd">brew</span> install node
+
+<span class="s-comment"># ③ 验证 Node.js 版本（需 ≥ 18）</span>
+<span class="s-cmd">node</span> -v   <span class="s-comment"># 应输出 v20.x.x 或更高</span>
+<span class="s-cmd">npm</span> -v
+
+<span class="s-comment"># ④ 全局安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ⑤ 验证安装</span>
+<span class="s-cmd">claude</span> --version
+
+<span class="s-comment"># ⑥ 配置 API（以 DeepSeek 为例）</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_BASE_URL</span>=<span class="s-str">"https://api.deepseek.com/anthropic"</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_AUTH_TOKEN</span>=<span class="s-str">"your_api_key"</span>
+<span class="s-cmd">claude</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🔄</span>方式二：nvm（管理多版本 Node.js）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · nvm 安装</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 安装 nvm</span>
+<span class="s-cmd">curl</span> -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+<span class="s-cmd">source</span> ~/.zshrc   <span class="s-comment"># 或 ~/.bashrc</span>
+
+<span class="s-comment"># 安装并使用 Node.js LTS</span>
+<span class="s-cmd">nvm</span> install --lts
+<span class="s-cmd">nvm</span> use --lts
+<span class="s-cmd">nvm</span> alias default node   <span class="s-comment"># 设为默认版本</span>
+
+<span class="s-comment"># 安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code</code></pre>
+  </div>
+
+  <h3><span class="h3-icon">💾</span>永久写入 API 配置</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · ~/.zshrc 永久配置</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 打开配置文件</span>
+<span class="s-cmd">open</span> -e ~/.zshrc   <span class="s-comment"># 用 TextEdit 编辑</span>
+<span class="s-comment"># 或用命令行编辑器</span>
+<span class="s-cmd">nano</span> ~/.zshrc
+
+<span class="s-comment"># 追加以下内容（以 DeepSeek + 通义千问双配置为例）</span>
+<span class="s-comment"># ──────────────── Claude Code 配置 ────────────────</span>
+<span class="s-export">export</span> <span class="s-key">DEEPSEEK_API_KEY</span>=<span class="s-str">"sk-your-deepseek-key"</span>
+<span class="s-export">export</span> <span class="s-key">QWEN_API_KEY</span>=<span class="s-str">"sk-your-qwen-key"</span>
+
+<span class="s-comment"># 默认使用 DeepSeek</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_BASE_URL</span>=<span class="s-str">"https://api.deepseek.com/anthropic"</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_AUTH_TOKEN</span>=<span class="s-str">"$DEEPSEEK_API_KEY"</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_MODEL</span>=<span class="s-str">"deepseek-chat"</span>
+<span class="s-export">export</span> <span class="s-key">API_TIMEOUT_MS</span>=<span class="s-str">600000</span>
+
+<span class="s-comment"># 快速切换函数</span>
+<span class="s-cmd">function</span> cc-deepseek() {
+  <span class="s-export">export</span> ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+  <span class="s-export">export</span> ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
+  <span class="s-export">export</span> ANTHROPIC_MODEL="deepseek-chat"
+  echo "✅ Claude Code → DeepSeek V3"
+}
+<span class="s-cmd">function</span> cc-qwen() {
+  <span class="s-export">export</span> ANTHROPIC_BASE_URL="https://dashscope.aliyuncs.com/apps/anthropic"
+  <span class="s-export">export</span> ANTHROPIC_API_KEY="$QWEN_API_KEY"
+  <span class="s-export">export</span> ANTHROPIC_MODEL="qwen3-coder-plus"
+  echo "✅ Claude Code → Qwen3-Coder"
+}
+<span class="s-comment"># ─────────────────────────────────────────────────</span>
+
+<span class="s-comment"># 使配置立即生效</span>
+<span class="s-cmd">source</span> ~/.zshrc</code></pre>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-icon">⚠️</div>
+    <div><strong>Apple Silicon 常见问题：</strong>若 npm 提示 <code class="ic">EACCES permission denied</code>，请勿用 <code class="ic">sudo npm install</code>。正确做法是通过 nvm 或 Homebrew 管理 Node.js，权限由用户目录完全控制，无需 root。</div>
+  </div>
+</section>
+
+<!-- ── C Linux ── -->
+<section id="linux">
+  <div class="sec-header">
+    <div class="sec-num-box">C</div>
+    <h2>🐧 Linux 各发行版安装<small>Ubuntu / Debian / RHEL / Arch</small></h2>
+  </div>
+
+  <div class="os-tabs-wrap">
+    <div class="os-tab-bar">
+      <button class="os-tab-btn active" onclick="switchTab(this,'ubuntu')"><span class="os-icon">🟠</span>Ubuntu/Debian</button>
+      <button class="os-tab-btn" onclick="switchTab(this,'rhel')"><span class="os-icon">🔴</span>RHEL/CentOS</button>
+      <button class="os-tab-btn" onclick="switchTab(this,'arch')"><span class="os-icon">🔵</span>Arch Linux</button>
+      <button class="os-tab-btn" onclick="switchTab(this,'nvm-linux')"><span class="os-icon">🟢</span>nvm（通用）</button>
+    </div>
+    <div class="os-tab-content">
+      <div class="os-tab-panel active" id="tab-ubuntu">
+        <pre><code><span class="s-comment"># Ubuntu 20.04 / 22.04 / 24.04 LTS & Debian 11/12</span>
+<span class="s-comment"># ① 添加 NodeSource 官方仓库（Node.js 20 LTS）</span>
+<span class="s-cmd">curl</span> -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+
+<span class="s-comment"># ② 安装 Node.js</span>
+<span class="s-cmd">sudo</span> apt-get install -y nodejs
+
+<span class="s-comment"># ③ 验证</span>
+<span class="s-cmd">node</span> -v && npm -v
+
+<span class="s-comment"># ④ 安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ⑤ 若提示 EACCES，配置 npm 全局目录（无需 sudo）</span>
+<span class="s-cmd">mkdir</span> -p ~/.npm-global
+<span class="s-cmd">npm</span> config set prefix '~/.npm-global'
+<span class="s-cmd">echo</span> <span class="s-str">'export PATH=~/.npm-global/bin:$PATH'</span> >> ~/.bashrc
+<span class="s-cmd">source</span> ~/.bashrc
+
+<span class="s-comment"># 再次安装</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+<span class="s-cmd">claude</span> --version</code></pre>
+      </div>
+      <div class="os-tab-panel" id="tab-rhel">
+        <pre><code><span class="s-comment"># RHEL 8 / CentOS 8 / Rocky Linux / AlmaLinux</span>
+<span class="s-comment"># ① 添加 NodeSource 仓库</span>
+<span class="s-cmd">curl</span> -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+
+<span class="s-comment"># ② 安装 Node.js</span>
+<span class="s-cmd">sudo</span> dnf install -y nodejs
+
+<span class="s-comment"># ③ Fedora 用户</span>
+<span class="s-comment"># sudo dnf install -y nodejs npm</span>
+
+<span class="s-comment"># ④ 安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+<span class="s-cmd">claude</span> --version
+
+<span class="s-comment"># ⑤ 配置 PATH（如提示找不到命令）</span>
+<span class="s-cmd">echo</span> <span class="s-str">'export PATH=$PATH:$(npm bin -g)'</span> >> ~/.bashrc
+<span class="s-cmd">source</span> ~/.bashrc</code></pre>
+      </div>
+      <div class="os-tab-panel" id="tab-arch">
+        <pre><code><span class="s-comment"># Arch Linux / Manjaro</span>
+<span class="s-comment"># ① 通过 pacman 安装 Node.js</span>
+<span class="s-cmd">sudo</span> pacman -S nodejs npm
+
+<span class="s-comment"># 或通过 AUR（更新更快）</span>
+<span class="s-cmd">yay</span> -S nodejs-lts-iron
+
+<span class="s-comment"># ② 安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ③ 若提示权限错误，先配置用户级目录</span>
+<span class="s-cmd">echo</span> <span class="s-str">"prefix = $HOME/.npm-global"</span> >> ~/.npmrc
+<span class="s-cmd">echo</span> <span class="s-str">'export PATH=$HOME/.npm-global/bin:$PATH'</span> >> ~/.bashrc
+<span class="s-cmd">source</span> ~/.bashrc
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code</code></pre>
+      </div>
+      <div class="os-tab-panel" id="tab-nvm-linux">
+        <pre><code><span class="s-comment"># nvm 方案（适用所有 Linux 发行版，推荐）</span>
+<span class="s-comment"># ① 安装 nvm</span>
+<span class="s-cmd">curl</span> -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+
+<span class="s-comment"># ② 重新加载 Shell</span>
+<span class="s-cmd">export</span> NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+<span class="s-comment"># 或直接关闭终端重开</span>
+
+<span class="s-comment"># ③ 安装 Node.js LTS</span>
+<span class="s-cmd">nvm</span> install --lts
+<span class="s-cmd">nvm</span> use --lts
+<span class="s-cmd">nvm</span> alias default node
+
+<span class="s-comment"># ④ 安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+<span class="s-cmd">claude</span> --version
+
+<span class="s-comment"># nvm 方案不会有权限问题，是最推荐的 Linux 安装方式</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h3><span class="h3-icon">⚙️</span>Linux 永久配置 API</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · ~/.bashrc 或 ~/.zshrc</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-cmd">cat</span> >> ~/.bashrc << <span class="s-str">'EOF'</span>
+
+<span class="s-comment"># ──────── Claude Code 配置 ────────</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_BASE_URL</span>=<span class="s-str">"https://api.deepseek.com/anthropic"</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_AUTH_TOKEN</span>=<span class="s-str">"your_api_key"</span>
+<span class="s-export">export</span> <span class="s-key">ANTHROPIC_MODEL</span>=<span class="s-str">"deepseek-chat"</span>
+<span class="s-export">export</span> <span class="s-key">API_TIMEOUT_MS</span>=<span class="s-str">600000</span>
+<span class="s-export">export</span> <span class="s-key">CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</span>=<span class="s-str">1</span>
+<span class="s-comment"># ──────────────────────────────────</span>
+<span class="s-str">EOF</span>
+
+<span class="s-cmd">source</span> ~/.bashrc
+
+<span class="s-comment"># 更安全的做法：将密钥单独存入 ~/.claude_keys（不上传 git）</span>
+<span class="s-cmd">echo</span> <span class="s-str">'source ~/.claude_keys'</span> >> ~/.bashrc
+<span class="s-cmd">cat</span> > ~/.claude_keys << <span class="s-str">'EOF'</span>
+<span class="s-export">export</span> ANTHROPIC_AUTH_TOKEN="your_real_api_key"
+<span class="s-str">EOF</span>
+<span class="s-cmd">chmod</span> 600 ~/.claude_keys   <span class="s-comment"># 限制为仅当前用户可读</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🔒</span>服务器 / CI 环境安装（Headless）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 无交互模式安装</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 在 CI/CD 或服务器中安装</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># 非交互式执行（-p 标志 = headless mode，无需 TUI）</span>
+<span class="s-cmd">claude</span> <span class="s-flag">-p</span> <span class="s-str">"帮我分析当前目录的代码结构"</span> \
+  <span class="s-flag">--dangerously-skip-permissions</span> \
+  <span class="s-flag">--output-format</span> json
+
+<span class="s-comment"># 在 GitHub Actions 中使用</span>
+<span class="s-comment"># - name: Claude Code Analysis</span>
+<span class="s-comment">#   env:</span>
+<span class="s-comment">#     ANTHROPIC_AUTH_TOKEN: ${{ secrets.DEEPSEEK_API_KEY }}</span>
+<span class="s-comment">#     ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic</span>
+<span class="s-comment">#   run: claude -p "检查代码质量并生成报告" --dangerously-skip-permissions</span></code></pre>
+  </div>
+</section>
+
+<!-- ── D Windows ── -->
+<section id="windows">
+  <div class="sec-header">
+    <div class="sec-num-box">D</div>
+    <h2>🪟 Windows 完整安装<small>WSL2 / PowerShell / Git Bash 三路径</small></h2>
+  </div>
+
+  <div class="alert alert-tip">
+    <div class="alert-icon">💡</div>
+    <div>Windows 下强烈推荐 <strong>WSL2</strong> 方案。它提供完整的 Linux 环境，Claude Code 的所有功能（tmux、MCP 服务器、Shell 脚本）都能正常运行，体验与 macOS/Linux 完全一致。</div>
+  </div>
+
+  <div class="os-tabs-wrap">
+    <div class="os-tab-bar">
+      <button class="os-tab-btn active" onclick="switchTab(this,'wsl2')"><span class="os-icon">🐧</span>WSL2（推荐）</button>
+      <button class="os-tab-btn" onclick="switchTab(this,'ps7')"><span class="os-icon">🔵</span>PowerShell 7</button>
+      <button class="os-tab-btn" onclick="switchTab(this,'gitbash')"><span class="os-icon">🟠</span>Git Bash</button>
+    </div>
+    <div class="os-tab-content">
+      <div class="os-tab-panel active" id="tab-wsl2">
+        <pre><code><span class="s-comment"># ── STEP 1：安装 WSL2（以管理员身份运行 PowerShell）──</span>
+<span class="s-win">wsl</span> --install
+<span class="s-comment"># 默认安装 Ubuntu，重启计算机后继续</span>
+
+<span class="s-comment"># 验证 WSL 版本</span>
+<span class="s-win">wsl</span> --list --verbose
+<span class="s-comment"># 如果是 WSL1，升级：wsl --set-version Ubuntu 2</span>
+
+<span class="s-comment"># ── STEP 2：在 WSL2 Ubuntu 中安装 Node.js ──</span>
+<span class="s-comment"># （启动 WSL 终端后，以下命令在 Linux 环境内执行）</span>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+
+nvm install --lts
+nvm use --lts
+
+<span class="s-comment"># ── STEP 3：安装 Claude Code ──</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ── STEP 4：配置 API ──</span>
+cat >> ~/.bashrc << 'EOF'
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="your_api_key"
+export ANTHROPIC_MODEL="deepseek-chat"
+EOF
+source ~/.bashrc
+
+<span class="s-comment"># ── STEP 5：启动 ──</span>
+claude</code></pre>
+      </div>
+      <div class="os-tab-panel" id="tab-ps7">
+        <pre><code><span class="s-comment"># ── PowerShell 7 安装 Node.js + Claude Code ──</span>
+
+<span class="s-comment"># 方式 A：通过 winget（Windows 包管理器）</span>
+<span class="s-win">winget</span> install -e --id OpenJS.NodeJS.LTS
+
+<span class="s-comment"># 方式 B：通过 Scoop（用户级包管理器）</span>
+<span class="s-comment"># Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</span>
+<span class="s-comment"># irm get.scoop.sh | iex</span>
+<span class="s-comment"># scoop install nodejs-lts</span>
+
+<span class="s-comment"># ── 安装 Claude Code（重新打开 PS 后执行）──</span>
+<span class="s-win">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ── 永久配置环境变量（写入 PowerShell Profile）──</span>
+<span class="s-comment"># 打开 Profile 文件</span>
+<span class="s-win">notepad</span> $PROFILE
+<span class="s-comment"># 或创建 Profile（如不存在）</span>
+<span class="s-win">New-Item</span> -Path $PROFILE -ItemType File -Force
+
+<span class="s-comment"># 在 Profile 中写入（使用编辑器添加以下内容）：</span>
+<span class="s-win">$env</span>:ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
+<span class="s-win">$env</span>:ANTHROPIC_AUTH_TOKEN = "your_api_key"
+<span class="s-win">$env</span>:ANTHROPIC_MODEL = "deepseek-chat"
+<span class="s-win">$env</span>:API_TIMEOUT_MS = "600000"
+
+<span class="s-comment"># 或使用 setx 永久写入系统环境变量（所有 Shell 可见）</span>
+<span class="s-win">setx</span> ANTHROPIC_BASE_URL "https://api.deepseek.com/anthropic"
+<span class="s-win">setx</span> ANTHROPIC_AUTH_TOKEN "your_api_key"
+<span class="s-win">setx</span> ANTHROPIC_MODEL "deepseek-chat"
+<span class="s-comment"># 注意：setx 需重新打开终端才生效</span></code></pre>
+      </div>
+      <div class="os-tab-panel" id="tab-gitbash">
+        <pre><code><span class="s-comment"># ── Git Bash 安装（适合已有 Git for Windows 的用户）──</span>
+
+<span class="s-comment"># ① 先从 nodejs.org 下载 LTS 安装包并安装</span>
+<span class="s-comment"># 安装后 Git Bash 中可直接使用 node 和 npm</span>
+
+<span class="s-comment"># ② 在 Git Bash 中安装 Claude Code</span>
+<span class="s-cmd">npm</span> install -g @anthropic-ai/claude-code
+
+<span class="s-comment"># ③ 在 ~/.bashrc 中配置（Git Bash 使用 ~/.bashrc）</span>
+<span class="s-cmd">cat</span> >> ~/.bashrc << 'EOF'
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="your_api_key"
+export ANTHROPIC_MODEL="deepseek-chat"
+EOF
+source ~/.bashrc
+
+<span class="s-comment"># ⚠️ Git Bash 限制：部分终端 UI 可能显示异常</span>
+<span class="s-comment"># 建议安装 Windows Terminal 并在 Git Bash Profile 中运行</span>
+<span class="s-cmd">claude</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h3><span class="h3-icon">🪟</span>Windows Terminal 多标签配置（推荐配合 WSL2）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">json · Windows Terminal settings.json 片段</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment">// Windows Terminal → 设置 → 打开 JSON 文件，在 profiles.list 中添加：</span>
+{
+  <span class="s-key">"guid"</span>: <span class="s-str">"{your-unique-guid}"</span>,
+  <span class="s-key">"name"</span>: <span class="s-str">"Claude Code (WSL2)"</span>,
+  <span class="s-key">"source"</span>: <span class="s-str">"Windows.Terminal.Wsl"</span>,
+  <span class="s-key">"startingDirectory"</span>: <span class="s-str">"//wsl$/Ubuntu/home/username"</span>,
+  <span class="s-key">"commandline"</span>: <span class="s-str">"wsl.exe ~ -e bash -c 'claude'"</span>,
+  <span class="s-key">"colorScheme"</span>: <span class="s-str">"One Half Dark"</span>,
+  <span class="s-key">"icon"</span>: <span class="s-str">"🤖"</span>
+}</code></pre>
+  </div>
+
+  <div class="alert alert-info">
+    <div class="alert-icon">ℹ️</div>
+    <div>
+      <strong>WSL2 中访问 Windows 项目文件：</strong>Windows 的 C 盘挂载在 WSL2 的 <code class="ic">/mnt/c/</code> 路径下。例如 Windows 的 <code class="ic">C:\Users\你\projects\myapp</code> 在 WSL2 中是 <code class="ic">/mnt/c/Users/你/projects/myapp</code>。
+      <br>建议将项目放在 WSL2 文件系统内（<code class="ic">~/projects/</code>）而非 Windows 盘，以获得更好的 I/O 性能。
+    </div>
+  </div>
+</section>
+
+<!-- ── E 会话基础 ── -->
+<section id="session-basics">
+  <div class="sec-header">
+    <div class="sec-num-box">E</div>
+    <h2>会话管理基础<small>单个项目内的会话切换与恢复</small></h2>
+  </div>
+
+  <p>Claude Code 的会话（Session）存储在每个项目目录的 <code class="ic">.claude/</code> 文件夹中，<strong>会话与项目目录绑定</strong>。</p>
+
+  <h3><span class="h3-icon">📋</span>会话的工作原理</h3>
+  <div class="workflow">
+    <div class="workflow-title">会话存储结构</div>
+    <div class="workflow-diagram"><span class="wd-gold">项目目录结构</span>
+~/projects/my-app/
+├── src/
+├── package.json
+└── <span class="wd-accent">.claude/</span>
+    ├── <span class="wd-green">settings.json</span>          ← 项目级配置
+    ├── <span class="wd-green">settings.local.json</span>    ← 本地配置（不提交）
+    └── <span class="wd-blue">sessions/</span>              ← 会话历史
+        ├── session_abc123.json   ← 历史会话1
+        ├── session_def456.json   ← 历史会话2
+        └── session_current.json  ← 当前会话
+
+<span class="wd-gold">注意：.claude/sessions/ 建议加入 .gitignore</span></div>
+  </div>
+
+  <h3><span class="h3-icon">🔄</span>恢复历史会话</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">claude session · 会话恢复命令</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 方式一：启动时直接进入会话选择器</span>
+<span class="s-cmd">claude</span> <span class="s-flag">--resume</span>
+<span class="s-comment"># 会弹出交互式选择器，显示项目内所有历史会话</span>
+
+<span class="s-comment"># 方式二：会话内使用 /resume 命令</span>
+<span class="s-section">/resume</span>
+<span class="s-comment"># 选择器快捷键：↑↓ 选择，Enter 确认，R 重命名会话</span>
+
+<span class="s-comment"># 方式三：从指定 PR 恢复（适合 Code Review 场景）</span>
+<span class="s-cmd">claude</span> <span class="s-flag">--from-pr</span> 123
+<span class="s-comment"># 恢复与该 PR 关联的会话</span>
+
+<span class="s-comment"># 实用建议：给会话起有意义的名字</span>
+<span class="s-comment"># 在 /resume 选择器中按 R 重命名，方便以后识别</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🧹</span>上下文管理</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">claude session · 上下文控制</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 清空上下文（开始全新对话，适合切换任务）</span>
+<span class="s-section">/clear</span>
+
+<span class="s-comment"># 压缩上下文（保留摘要，节省 token，适合长会话）</span>
+<span class="s-section">/compact</span>
+
+<span class="s-comment"># 回退到之前某步（"时光机"功能）</span>
+<span class="s-section">/rewind</span>
+<span class="s-comment"># 选择要回退的步骤，可在此基础上开启分叉会话</span>
+
+<span class="s-comment"># 查看当前会话使用的模型和配置</span>
+<span class="s-section">/status</span></code></pre>
+  </div>
+
+  <div class="alert alert-tip">
+    <div class="alert-icon">💡</div>
+    <div><strong>实用技巧：</strong>使用 <code class="ic">/rewind</code> 可以在当前会话中创建"分叉"——回退到某个节点，然后尝试不同的解决方案，而不会丢失原来的对话记录。这对于探索多种实现方案非常有用。</div>
+  </div>
+</section>
+
+<!-- ── F 多项目切换 ── -->
+<section id="multi-project">
+  <div class="sec-header">
+    <div class="sec-num-box">F</div>
+    <h2>多项目切换<small>在不同代码库之间快速切换工作上下文</small></h2>
+  </div>
+
+  <p>Claude Code 的会话是<strong>按项目目录隔离</strong>的。切换项目 = 切换目录，Claude 会自动加载该项目的历史会话和配置。</p>
+
+  <h3><span class="h3-icon">➡️</span>方法一：cd 切换目录（最简单）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 基础切换方式</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 项目 A（前端）</span>
+<span class="s-cmd">cd</span> ~/projects/my-frontend
+<span class="s-cmd">claude</span>          <span class="s-comment"># ← 自动加载此项目的会话和 CLAUDE.md</span>
+
+<span class="s-comment"># 切换到项目 B（后端）</span>
+<span class="s-comment"># 先退出当前 claude（Ctrl+C 或 /exit），然后</span>
+<span class="s-cmd">cd</span> ~/projects/my-backend
+<span class="s-cmd">claude</span>          <span class="s-comment"># ← 自动加载后端项目的会话</span>
+
+<span class="s-comment"># 或者同时指定模型（不同项目用不同模型）</span>
+<span class="s-cmd">cd</span> ~/projects/my-backend
+<span class="s-cmd">claude</span> <span class="s-flag">--model</span> qwen3-coder-plus
+
+<span class="s-comment"># 查看当前项目有哪些历史会话</span>
+<span class="s-cmd">ls</span> .claude/sessions/   <span class="s-comment"># 若目录存在</span>
+<span class="s-section">/resume</span>               <span class="s-comment"># 在 claude 内部选择</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">⚡</span>方法二：多终端 / 多 Tab 并行</h3>
+  <p>这是最直观的多项目同时工作方案：每个终端 Tab 运行一个项目的 Claude Code，互不干扰。</p>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 多 Tab 并行操作</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 终端 Tab 1：前端项目 ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-frontend
+<span class="s-cmd">claude</span>
+<span class="s-comment"># 在此 Tab 工作，claude 完全理解前端代码库</span>
+
+<span class="s-comment"># ── 终端 Tab 2：后端项目 ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-backend
+<span class="s-cmd">claude</span>
+<span class="s-comment"># 完全独立的上下文，互不影响</span>
+
+<span class="s-comment"># ── 终端 Tab 3：基础设施 ──</span>
+<span class="s-cmd">cd</span> ~/projects/infra-config
+<span class="s-cmd">claude</span>
+
+<span class="s-comment"># 工具推荐：</span>
+<span class="s-comment"># macOS：iTerm2（Cmd+D 水平分屏，Cmd+Shift+D 垂直分屏）</span>
+<span class="s-comment"># Linux：tmux / Terminator / Tilix</span>
+<span class="s-comment"># Windows：Windows Terminal（可配置多个 WSL2 Tab）</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🖥️</span>方法三：tmux 持久化多项目会话（Linux / macOS / WSL2）</h3>
+  <p>tmux 让终端会话在关闭连接后依然存在，断开 SSH 后 Claude Code 继续工作。</p>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · tmux 多项目管理</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 安装 tmux</span>
+<span class="s-cmd">brew</span> install tmux           <span class="s-comment"># macOS</span>
+<span class="s-cmd">sudo apt</span> install tmux       <span class="s-comment"># Ubuntu/Debian</span>
+
+<span class="s-comment"># ── 为不同项目创建命名 tmux 会话 ──</span>
+<span class="s-cmd">tmux</span> new -s frontend        <span class="s-comment"># 创建名为 frontend 的会话</span>
+<span class="s-cmd">cd</span> ~/projects/my-frontend && claude
+
+<span class="s-comment"># 快捷键：Ctrl+B, D  →  分离（Detach）当前会话</span>
+
+<span class="s-cmd">tmux</span> new -s backend         <span class="s-comment"># 新建 backend 会话</span>
+<span class="s-cmd">cd</span> ~/projects/my-backend && claude
+<span class="s-comment"># Ctrl+B, D  →  分离</span>
+
+<span class="s-comment"># ── 查看所有运行中的 tmux 会话 ──</span>
+<span class="s-cmd">tmux</span> ls
+<span class="s-comment"># 输出：frontend: 1 windows (created...) [220x56]</span>
+<span class="s-comment">#        backend:  1 windows (created...) [220x56]</span>
+
+<span class="s-comment"># ── 重新连接到某个项目 ──</span>
+<span class="s-cmd">tmux</span> attach -t frontend     <span class="s-comment"># 回到前端项目</span>
+<span class="s-cmd">tmux</span> attach -t backend      <span class="s-comment"># 回到后端项目</span>
+
+<span class="s-comment"># ── tmux 常用快捷键（Ctrl+B 前缀）──</span>
+<span class="s-comment"># Ctrl+B D       分离当前会话</span>
+<span class="s-comment"># Ctrl+B $       重命名当前会话</span>
+<span class="s-comment"># Ctrl+B s       列出所有会话并切换</span>
+<span class="s-comment"># Ctrl+B c       在当前会话新建窗口</span>
+<span class="s-comment"># Ctrl+B w       切换窗口</span>
+<span class="s-comment"># Ctrl+B %       左右分屏</span>
+<span class="s-comment"># Ctrl+B "       上下分屏</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🚀</span>方法四：快速跳转脚本</h3>
+  <p>写一个 Shell 函数，一键跳转到任意项目并启动 Claude Code：</p>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 写入 ~/.zshrc 或 ~/.bashrc</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 多项目快速启动函数 ──</span>
+<span class="s-comment"># 用法：cc frontend / cc backend / cc infra</span>
+
+<span class="s-cmd">declare</span> -A CLAUDE_PROJECTS=(
+  [frontend]=<span class="s-str">"$HOME/projects/my-frontend"</span>
+  [backend]=<span class="s-str">"$HOME/projects/my-backend"</span>
+  [infra]=<span class="s-str">"$HOME/projects/infra-config"</span>
+  [docs]=<span class="s-str">"$HOME/projects/documentation"</span>
+)
+
+<span class="s-cmd">function</span> cc() {
+  local project=<span class="s-str">"$1"</span>
+  if [[ -z <span class="s-str">"$project"</span> ]]; then
+    <span class="s-comment"># 无参数：列出所有项目</span>
+    echo <span class="s-str">"📂 可用项目："</span>
+    for key in <span class="s-str">"${!CLAUDE_PROJECTS[@]}"</span>; do
+      echo <span class="s-str">"  cc $key  →  ${CLAUDE_PROJECTS[$key]}"</span>
+    done
+    return
+  fi
+  local dir=<span class="s-str">"${CLAUDE_PROJECTS[$project]}"</span>
+  if [[ -z <span class="s-str">"$dir"</span> ]]; then
+    <span class="s-comment"># 当作目录路径直接处理</span>
+    dir=<span class="s-str">"$1"</span>
+  fi
+  if [[ ! -d <span class="s-str">"$dir"</span> ]]; then
+    echo <span class="s-str">"❌ 目录不存在: $dir"</span>; return 1
+  fi
+  echo <span class="s-str">"🚀 进入 $project → $dir"</span>
+  <span class="s-cmd">cd</span> <span class="s-str">"$dir"</span> && claude
+}
+
+<span class="s-comment"># 使用示例：</span>
+<span class="s-comment"># cc              ← 列出所有项目</span>
+<span class="s-comment"># cc frontend     ← 跳转前端项目并启动 claude</span>
+<span class="s-comment"># cc backend      ← 跳转后端项目并启动 claude</span>
+<span class="s-comment"># cc ~/other-proj ← 直接用路径</span></code></pre>
+  </div>
+</section>
+
+<!-- ── G Worktree ── -->
+<section id="worktree">
+  <div class="sec-header">
+    <div class="sec-num-box">G</div>
+    <h2>Git Worktree 并行会话<small>同一项目多分支同时运行 Claude Code</small></h2>
+  </div>
+
+  <p>Git Worktree 是 Claude Code 最强大的工作流之一：<strong>同一个仓库同时在多个目录开发多个功能</strong>，每个目录运行独立的 Claude Code 实例，完全无冲突。</p>
+
+  <div class="workflow">
+    <div class="workflow-title">单目录 vs Worktree 对比</div>
+    <div class="workflow-diagram"><span class="wd-accent">❌ 传统单目录：</span>                    <span class="wd-green">✅ Git Worktree 并行：</span>
+┌─────────────────────────┐         ┌──────────────────────────────────────────┐
+│  ~/projects/my-app/     │         │  ~/projects/my-app/          (main)      │
+│  当前只能在一个分支      │         │  ~/projects/my-app-feat-auth/ (feature)  │
+│  Context Lost ❌         │         │  ~/projects/my-app-bugfix/    (hotfix)   │
+│  stash → checkout       │         │                                          │
+│  → restart AI           │         │  每个目录 = 独立分支 + 独立 Claude 实例   │
+└─────────────────────────┘         │  共享同一个 git 历史和对象库             │
+                                    └──────────────────────────────────────────┘
+
+<span class="wd-blue">Tab 1</span>: cd my-app && claude          <span class="wd-green">→ 处理 main 分支任务</span>
+<span class="wd-blue">Tab 2</span>: cd my-app-feat-auth && claude <span class="wd-green">→ 并行开发认证功能</span>
+<span class="wd-blue">Tab 3</span>: cd my-app-bugfix && claude    <span class="wd-green">→ 同时修复紧急 Bug</span></div>
+  </div>
+
+  <h3><span class="h3-icon">⚡</span>Claude Code 内置 Worktree 支持（推荐）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · --worktree 标志（v2.1.50+）</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 一键创建 Worktree 并启动新 Claude 会话 ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-app   <span class="s-comment"># 先进入主项目目录</span>
+
+<span class="s-comment"># 创建名为 feature-payments 的 Worktree（短标志 -w）</span>
+<span class="s-cmd">claude</span> <span class="s-flag">-w</span> feature-payments
+<span class="s-comment"># Claude 会自动：</span>
+<span class="s-comment"># 1. 在 .claude/worktrees/feature-payments/ 创建目录</span>
+<span class="s-comment"># 2. 创建 feature-payments 分支</span>
+<span class="s-comment"># 3. 在该目录启动 Claude Code 会话</span>
+
+<span class="s-comment"># 完整标志写法</span>
+<span class="s-cmd">claude</span> <span class="s-flag">--worktree</span> feature-payments
+
+<span class="s-comment"># 如果不指定名称，Claude 会自动生成</span>
+<span class="s-cmd">claude</span> <span class="s-flag">--worktree</span>
+
+<span class="s-comment"># 会话内中途决定需要隔离时，也可以 /worktree 命令创建</span>
+<span class="s-section">/worktree</span> create feature-payments</code></pre>
+  </div>
+
+  <div class="alert alert-tip">
+    <div class="alert-icon">💡</div>
+    <div>将 <code class="ic">.claude/worktrees/</code> 加入项目 <code class="ic">.gitignore</code>，避免 worktree 内容被 git 识别为未跟踪文件：<br><code class="ic">echo ".claude/worktrees/" >> .gitignore</code></div>
+  </div>
+
+  <h3><span class="h3-icon">🔧</span>手动管理 Worktree（更多控制）</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 手动 git worktree 操作</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 创建 Worktree ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-app
+
+<span class="s-comment"># 创建新分支 + 新工作目录（放在仓库同级）</span>
+<span class="s-cmd">git</span> worktree add ../my-app-feature-auth -b feature/auth
+<span class="s-cmd">git</span> worktree add ../my-app-bugfix-login -b hotfix/login-bug
+
+<span class="s-comment"># 基于已有分支创建工作目录</span>
+<span class="s-cmd">git</span> worktree add ../my-app-release release/v2.0
+
+<span class="s-comment"># ── 在各 Worktree 中启动 Claude ──</span>
+<span class="s-comment"># Terminal Tab 1（主项目）</span>
+<span class="s-cmd">cd</span> ~/projects/my-app && claude
+
+<span class="s-comment"># Terminal Tab 2（认证功能）</span>
+<span class="s-cmd">cd</span> ~/projects/my-app-feature-auth
+<span class="s-cmd">npm</span> install          <span class="s-comment"># 别忘初始化依赖！</span>
+<span class="s-cmd">claude</span>
+
+<span class="s-comment"># Terminal Tab 3（紧急修复）</span>
+<span class="s-cmd">cd</span> ~/projects/my-app-bugfix-login
+<span class="s-cmd">npm</span> install
+<span class="s-cmd">claude</span>
+
+<span class="s-comment"># ── 查看所有 Worktree ──</span>
+<span class="s-cmd">git</span> worktree list
+<span class="s-comment"># 输出：</span>
+<span class="s-comment"># /home/user/projects/my-app               abc1234 [main]</span>
+<span class="s-comment"># /home/user/projects/my-app-feature-auth  def5678 [feature/auth]</span>
+<span class="s-comment"># /home/user/projects/my-app-bugfix-login  ghi9012 [hotfix/login-bug]</span>
+
+<span class="s-comment"># ── 完成后清理 Worktree ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-app
+<span class="s-cmd">git</span> worktree remove ../my-app-feature-auth
+<span class="s-cmd">git</span> branch -d feature/auth    <span class="s-comment"># 可选：同时删除分支</span>
+
+<span class="s-comment"># 批量清理已删除的 Worktree 引用</span>
+<span class="s-cmd">git</span> worktree prune</code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🔀</span>Worktree 内的会话恢复与跨 Worktree 切换</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 跨 Worktree 会话管理</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># /resume 选择器会显示同一 git 仓库下所有 Worktree 的会话</span>
+<span class="s-section">/resume</span>
+<span class="s-comment"># 可以在当前 Worktree 的 claude 中看到其他 Worktree 的历史会话</span>
+
+<span class="s-comment"># 在同一 Worktree 创建"分叉实验"（不污染主会话）</span>
+<span class="s-section">/rewind</span>      <span class="s-comment"># 回退到某个步骤</span>
+<span class="s-comment"># 然后尝试不同的解决方案</span>
+
+<span class="s-comment"># 提交 Worktree 中的工作成果并创建 PR</span>
+<span class="s-cmd">cd</span> ~/projects/my-app-feature-auth
+<span class="s-cmd">git</span> add -A
+<span class="s-cmd">git</span> commit -m <span class="s-str">"feat: add OAuth2 authentication"</span>
+<span class="s-cmd">git</span> push -u origin feature/auth
+<span class="s-cmd">gh</span> pr create <span class="s-flag">--title</span> <span class="s-str">"Add OAuth2 authentication"</span> <span class="s-flag">--base</span> main</code></pre>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <strong>合并冲突预防：</strong>如果多个 Worktree 都修改了同一个文件（如 <code class="ic">src/config.ts</code>），合并时会出现冲突。最佳实践是：每个 Worktree 负责相对独立的功能模块，在任务分配给 Claude Code 时，明确告知"只修改 X 模块相关的文件"。
+    </div>
+  </div>
+</section>
+
+<!-- ── H 管理工具 ── -->
+<section id="tools">
+  <div class="sec-header">
+    <div class="sec-num-box">H</div>
+    <h2>第三方管理工具<small>让多项目 / 多会话管理更高效</small></h2>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <div class="tc-top">
+        <div class="tc-name">CCManager</div>
+        <span class="tag tag-green">推荐</span>
+      </div>
+      <div class="tc-desc">TUI 界面管理多个项目的多个 Claude Code 会话，支持自动发现所有 git 仓库，无需 tmux，显示每个会话的实时状态（active/busy/waiting）。</div>
+    </div>
+    <div class="tool-card">
+      <div class="tc-top">
+        <div class="tc-name">Claude Squad</div>
+        <span class="tag tag-blue">tmux 用户</span>
+      </div>
+      <div class="tc-desc">基于 tmux 的多 Claude Code 实例管理工具，每个实例在独立 tmux 窗格中运行，适合深度 tmux 用户，支持可视化监控所有并行任务。</div>
+    </div>
+    <div class="tool-card">
+      <div class="tc-top">
+        <div class="tc-name">ccswitch</div>
+        <span class="tag tag-orange">轻量</span>
+      </div>
+      <div class="tc-desc">专注于 Worktree 管理的 Go CLI 工具，解决频繁创建 / 删除 Worktree 的繁琐操作，一条命令完成创建、进入、启动 Claude Code 全流程。</div>
+    </div>
+    <div class="tool-card">
+      <div class="tc-top">
+        <div class="tc-name">GitButler + Hooks</div>
+        <span class="tag tag-gold">无冲突</span>
+      </div>
+      <div class="tc-desc">通过 Claude Code lifecycle hooks 与 GitButler 集成，可在同一工作目录运行多个 Claude Code 实例，自动按会话 ID 分配到不同分支，无需 Worktree。</div>
+    </div>
+  </div>
+
+  <h3><span class="h3-icon">📦</span>CCManager 安装与使用</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · CCManager</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 安装</span>
+<span class="s-cmd">npm</span> install -g ccmanager
+<span class="s-comment"># 或直接 npx 运行（无需安装）</span>
+<span class="s-cmd">npx</span> ccmanager
+
+<span class="s-comment"># 多项目模式（自动发现所有 git 仓库）</span>
+<span class="s-export">export</span> <span class="s-key">CCMANAGER_MULTI_PROJECT_ROOT</span>=<span class="s-str">"$HOME/projects"</span>
+<span class="s-cmd">npx</span> ccmanager <span class="s-flag">--multi-project</span>
+<span class="s-comment"># TUI 界面中：</span>
+<span class="s-comment"># / 搜索项目名</span>
+<span class="s-comment"># Enter 进入项目</span>
+<span class="s-comment"># 显示 [active/busy/waiting] 状态</span>
+<span class="s-comment"># 切换项目时会话保持运行</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🧑‍🤝‍🧑</span>Claude Squad 安装与使用</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · Claude Squad</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># 安装（macOS/Linux，需先有 tmux）</span>
+<span class="s-cmd">brew</span> install tmux
+<span class="s-cmd">npm</span> install -g @claude-squad/cli
+<span class="s-comment"># 或通过 GitHub releases 下载二进制</span>
+<span class="s-comment"># https://github.com/smtg-ai/claude-squad</span>
+
+<span class="s-comment"># 启动 Claude Squad</span>
+<span class="s-cmd">cs</span>
+<span class="s-comment"># 操作：</span>
+<span class="s-comment"># n  → 新建 Claude Code 实例</span>
+<span class="s-comment"># ↑↓ → 切换实例</span>
+<span class="s-comment"># Enter → 进入选中的实例</span>
+<span class="s-comment"># D  → 从实例分离（回到列表）</span>
+<span class="s-comment"># X  → 删除实例</span></code></pre>
+  </div>
+</section>
+
+<!-- ── I 高级工作流 ── -->
+<section id="advanced">
+  <div class="sec-header">
+    <div class="sec-num-box">I</div>
+    <h2>高级工作流最佳实践<small>真实开发场景的完整操作流程</small></h2>
+  </div>
+
+  <h3><span class="h3-icon">🎯</span>场景一：前后端分离项目同时开发</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · 完整操作示例</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 项目结构 ──</span>
+<span class="s-comment"># ~/projects/</span>
+<span class="s-comment"># ├── my-app-frontend/  (React + TypeScript)</span>
+<span class="s-comment"># └── my-app-backend/   (FastAPI + PostgreSQL)</span>
+
+<span class="s-comment"># ── 每个项目准备 CLAUDE.md（关键！）──</span>
+<span class="s-cmd">cat</span> > ~/projects/my-app-frontend/CLAUDE.md << <span class="s-str">'EOF'</span>
+# 前端项目
+## 技术栈：React 18 + TypeScript + Tailwind + Vite
+## 启动：npm run dev（端口 5173）
+## 构建：npm run build
+## 注意：API 调用统一在 src/api/ 目录，BASE_URL = http://localhost:8000
+<span class="s-str">EOF</span>
+
+<span class="s-cmd">cat</span> > ~/projects/my-app-backend/CLAUDE.md << <span class="s-str">'EOF'</span>
+# 后端项目
+## 技术栈：Python 3.11 + FastAPI + SQLAlchemy + PostgreSQL
+## 启动：uvicorn main:app --reload（端口 8000）
+## 数据库：postgresql://localhost/myapp_dev
+## API 文档：http://localhost:8000/docs
+<span class="s-str">EOF</span>
+
+<span class="s-comment"># ── 打开两个终端 Tab ──</span>
+<span class="s-comment"># Tab 1（前端）</span>
+<span class="s-cmd">cd</span> ~/projects/my-app-frontend && claude
+
+<span class="s-comment"># Tab 2（后端）</span>
+<span class="s-cmd">cd</span> ~/projects/my-app-backend && claude
+
+<span class="s-comment"># 两个 Claude 实例完全独立，分别理解各自的代码库</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">🔥</span>场景二：新功能 + 紧急 Bug 并行处理</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · Worktree 并行完整流程</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-comment"># ── 起点：正在开发新功能 ──</span>
+<span class="s-cmd">cd</span> ~/projects/my-app
+<span class="s-cmd">claude</span>                                   <span class="s-comment"># 已在 main 分支工作</span>
+
+<span class="s-comment"># 突然：生产环境出现 P0 Bug！</span>
+<span class="s-comment"># 不需要 stash，不打断当前 Claude 会话</span>
+
+<span class="s-comment"># 在新 Tab 中，利用 Claude Code 内置 worktree 创建隔离环境</span>
+<span class="s-cmd">cd</span> ~/projects/my-app
+<span class="s-cmd">claude</span> <span class="s-flag">-w</span> hotfix-payment-null-pointer
+<span class="s-comment"># Claude 自动创建 .claude/worktrees/hotfix-payment-null-pointer/</span>
+<span class="s-comment"># 告诉这个 Claude：</span>
+<span class="s-comment"># "修复 payment 模块的空指针异常，代码在 src/payment/processor.ts"</span>
+
+<span class="s-comment"># ── Tab 1：继续新功能（不受干扰）──</span>
+<span class="s-comment"># ── Tab 2：并行修复 Bug ──</span>
+
+<span class="s-comment"># Bug 修复完成后，在 hotfix Tab 中：</span>
+<span class="s-cmd">git</span> add -A && git commit -m <span class="s-str">"fix: resolve null pointer in payment processor"</span>
+<span class="s-cmd">git</span> push && gh pr create <span class="s-flag">--base</span> main
+
+<span class="s-comment"># 清理 Worktree</span>
+<span class="s-cmd">cd</span> ~/projects/my-app
+<span class="s-cmd">git</span> worktree remove .claude/worktrees/hotfix-payment-null-pointer
+<span class="s-comment"># 或在 claude 会话内：</span>
+<span class="s-section">/worktree</span> remove hotfix-payment-null-pointer</code></pre>
+  </div>
+
+  <h3><span class="h3-icon">📊</span>场景三：多项目 tmux 全栈工作站</h3>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-lang">bash · tmux 多项目一键启动脚本</span><button class="cb-copy" onclick="copyCode(this)">复制</button></div>
+    <pre><code><span class="s-cmd">cat</span> > ~/start-dev.sh << <span class="s-str">'EOF'</span>
+#!/bin/bash
+<span class="s-comment"># 一键启动全栈开发环境（三个 Claude 实例并行）</span>
+
+SESSION=<span class="s-str">"dev-workspace"</span>
+FRONTEND=<span class="s-str">"$HOME/projects/my-app-frontend"</span>
+BACKEND=<span class="s-str">"$HOME/projects/my-app-backend"</span>
+INFRA=<span class="s-str">"$HOME/projects/infra-config"</span>
+
+<span class="s-comment"># 如果会话已存在，直接连接</span>
+if tmux has-session -t $SESSION 2>/dev/null; then
+  tmux attach -t $SESSION
+  exit
+fi
+
+<span class="s-comment"># 创建新 tmux 会话</span>
+tmux new-session -d -s $SESSION -n frontend -x 220 -y 56
+
+<span class="s-comment"># 窗口 1：前端 Claude Code</span>
+tmux send-keys -t $SESSION:frontend "cd $FRONTEND && claude" Enter
+
+<span class="s-comment"># 窗口 2：后端 Claude Code</span>
+tmux new-window -t $SESSION -n backend
+tmux send-keys -t $SESSION:backend "cd $BACKEND && claude" Enter
+
+<span class="s-comment"># 窗口 3：基础设施</span>
+tmux new-window -t $SESSION -n infra
+tmux send-keys -t $SESSION:infra "cd $INFRA && claude" Enter
+
+<span class="s-comment"># 返回第一个窗口并连接</span>
+tmux select-window -t $SESSION:frontend
+tmux attach -t $SESSION
+<span class="s-str">EOF</span>
+
+<span class="s-cmd">chmod</span> +x ~/start-dev.sh
+
+<span class="s-comment"># 以后每次启动整个工作环境只需：</span>
+<span class="s-cmd">~/start-dev.sh</span>
+
+<span class="s-comment"># tmux 窗口切换：Ctrl+B + 1/2/3 或 Ctrl+B + 窗口名首字母</span></code></pre>
+  </div>
+
+  <h3><span class="h3-icon">📋</span>各方案汇总对比</h3>
+  <div class="compare-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr><th>切换方式</th><th>适用场景</th><th>会话隔离</th><th>并行支持</th><th>学习成本</th><th>推荐指数</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>cd 切换目录</td>
+          <td>顺序切换不同项目</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td>极低</td>
+          <td><span class="tag tag-blue">入门</span></td>
+        </tr>
+        <tr>
+          <td>多终端 Tab</td>
+          <td>2–4 个项目并行</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td>低</td>
+          <td><span class="tag tag-green">日常推荐</span></td>
+        </tr>
+        <tr>
+          <td>tmux 持久会话</td>
+          <td>服务器 / 长时间任务</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td>中</td>
+          <td><span class="tag tag-green">远程推荐</span></td>
+        </tr>
+        <tr>
+          <td>Git Worktree（内置）</td>
+          <td>同仓库多分支并行</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td>低</td>
+          <td><span class="tag tag-green">强力推荐</span></td>
+        </tr>
+        <tr>
+          <td>CCManager</td>
+          <td>大量项目统一管理</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td>低</td>
+          <td><span class="tag tag-green">多项目推荐</span></td>
+        </tr>
+        <tr>
+          <td>快速跳转脚本（cc）</td>
+          <td>固定项目集快速启动</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td>低</td>
+          <td><span class="tag tag-orange">效率辅助</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="alert alert-tip">
+    <div class="alert-icon">🎯</div>
+    <div>
+      <strong>推荐组合：</strong>
+      日常开发 → <strong>多终端 Tab + Git Worktree</strong> | 
+      服务器 / SSH → <strong>tmux + Worktree</strong> | 
+      大型多项目 → <strong>CCManager</strong>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Claude Code 多系统安装 & 多项目切换完整指南 · <span>2025–2026</span> · 基于官方文档及社区实践
+</footer>
+
+<script>
+function switchTab(btn, id) {
+  const container = btn.closest('.os-tabs-wrap');
+  container.querySelectorAll('.os-tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.os-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = container.querySelector('#tab-' + id);
+  if (panel) panel.classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ 已复制';
+    btn.style.color = 'var(--accent3)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+  });
+}
+
+document.querySelectorAll('nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
