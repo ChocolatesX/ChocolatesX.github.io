@@ -268,7 +268,7 @@
     margin-bottom: 6px;
     color: var(--ink);
   }
-  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; overflow-wrap: break-word; }
 
   /* TAGS */
   .tag {
@@ -379,6 +379,7 @@
     align-items: center;
   }
   .model-card-body { padding: 12px 16px; font-size: 13px; color: var(--muted); }
+  .model-card-body ul { padding-left: 16px; }
   .model-card-body li { margin-bottom: 4px; padding-left: 12px; position: relative; }
   .model-card-body li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
   .model-card.domestic .model-card-head { background: rgba(26,92,138,0.06); color: var(--accent2); }
@@ -485,6 +486,7 @@
   .os-content.active { display: block; }
   .os-panel { border-radius: 0 4px 4px 4px; }
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -1294,11 +1296,11 @@ EOF
 
 <script>
 function switchOS(tab, id) {
-  const panel = tab.closest('.code-block').querySelector('.os-panel');
-  panel.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
-  panel.querySelectorAll('.os-content').forEach(c => c.classList.remove('active'));
+  const block = tab.closest('.code-block');
+  block.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
+  block.querySelectorAll('.os-content').forEach(c => c.classList.remove('active'));
   tab.classList.add('active');
-  const target = panel.querySelector('#os-' + id);
+  const target = block.querySelector('#os-' + id);
   if (target) target.classList.add('active');
 }
 
